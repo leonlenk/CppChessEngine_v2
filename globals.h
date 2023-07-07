@@ -5,6 +5,8 @@
 // 64 bit unsigned int
 typedef unsigned long long U64;
 
+int const numOfPieces = 12;
+
 // initial board set up FEN string
 std::string const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 

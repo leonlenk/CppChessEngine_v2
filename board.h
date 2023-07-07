@@ -18,18 +18,13 @@ public:
 	~Board();
 
 	// gets the piece at the location of the mask
-	PieceMaps* getPieceAtMask(const U64 mask);
-
-	// draws the board
-	void renderGame();
-	// renderer helper function
-	void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTextures[12], std::unique_ptr<sf::Sprite> tempSprites[64], int draggedSpriteIndex);
-
+	PieceMaps* getPieceAtMask(const U64 mask) const;
+	// gets the pieces index
+	int getPieceIndexAtMask(const U64 mask) const;
+	
 private:
-	WPawnMap* wPawns;
-	BPawnMap* bPawns;
-	KnightMap* wKnights;
-	KnightMap* bKnights;
-	KingMap* wKing;
-	KingMap* bKing;
+	PieceMaps* allPieces[numOfPieces];
 };
+
+// draws a board
+void renderGame(Board* myBoard);

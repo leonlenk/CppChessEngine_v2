@@ -6,17 +6,27 @@
 #include "pawnMap.h"
 #include "knightMap.h"
 #include "kingMap.h"
+#include "slidingPieceMaps.h"
 
 using namespace std;
 
 Board::Board()
 {
-	wPawns = new WPawnMap(65280);
-	wKnights = new KnightMap(66);
-	wKing = new KingMap(16);
-	bPawns = new BPawnMap(71776119061217280);
-	bKnights = new KnightMap(4755801206503243776);
-	bKing = new KingMap(1152921504606846976);
+	// white pieces
+	allPieces[0] = new WPawnMap(65280);
+	allPieces[1] = new KnightMap(66);
+	allPieces[2] = new BishopMap(36);
+	allPieces[3] = new RookMap(129);
+	allPieces[4] = new QueenMap(8);
+	allPieces[5] = new KingMap(16);
+
+	// black pieces
+	allPieces[6] = new BPawnMap(71776119061217280);
+	allPieces[7] = new KnightMap(4755801206503243776);
+	allPieces[8] = new BishopMap(2594073385365405696);
+	allPieces[9] = new RookMap(9295429630892703744);
+	allPieces[10] = new QueenMap(576460752303423488);
+	allPieces[11] = new KingMap(1152921504606846976);
 }
 
 Board::Board(string startingFen)
@@ -26,22 +36,23 @@ Board::Board(string startingFen)
 
 Board::~Board()
 {
-	delete wPawns;
-	delete bPawns;
-	delete wKnights;
-	delete bKnights;
-	delete wKing;
-	delete bKing;
+	for (int i = 0; i < numOfPieces; i++)
+		if (allPieces[i] != nullptr)
+			delete allPieces[i];
 }
 
-PieceMaps* Board::getPieceAtMask(const U64 mask)
+PieceMaps* Board::getPieceAtMask(const U64 mask) const
 {
-	if (mask & (wPawns->get_pieceLoc())) return wPawns;
-	else if (mask & (bPawns->get_pieceLoc())) return bPawns;
-	else if (mask & (wKnights->get_pieceLoc())) return wKnights;
-	else if (mask & (bKnights->get_pieceLoc())) return bKnights;
-	else if (mask & (wKing->get_pieceLoc())) return wKing;
-	else if (mask & (bKing->get_pieceLoc())) return bKing;
-
+	for (int i = 0; i < numOfPieces; i++)
+		if ((mask & allPieces[i]->get_pieceLoc()) != 0)
+			return allPieces[i];
 	return nullptr;
+}
+
+int Board::getPieceIndexAtMask(const U64 mask) const
+{
+	for (int i = 0; i < numOfPieces; i++)
+		if ((mask & allPieces[i]->get_pieceLoc()) != 0)
+			return i;
+	return -1;
 }

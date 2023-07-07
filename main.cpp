@@ -7,6 +7,6 @@ using namespace std;
 int main()
 {
     Board myGame;
-    myGame.renderGame();
+    renderGame(&myGame);
 }
 

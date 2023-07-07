@@ -147,6 +147,7 @@
     <ClInclude Include="kingMap.h" />
     <ClInclude Include="knightMap.h" />
     <ClInclude Include="pieceMaps.h" />
+    <ClInclude Include="slidingPieceMaps.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="blackPieces\b.png" />

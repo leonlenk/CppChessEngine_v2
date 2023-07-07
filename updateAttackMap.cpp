@@ -1,6 +1,7 @@
 #include "pieceMaps.h"
 #include "knightMap.h"
 #include "kingMap.h"
+#include "slidingPieceMaps.h"
 
 void KnightMap::updateAttackMap() 
 { 
@@ -15,4 +16,19 @@ void KingMap::updateAttackMap()
 	U64 attacks = (get_pieceLoc() & notAFile) << 1 | (get_pieceLoc() & notHFile) >> 1 | get_pieceLoc(); // west one and east one
 	// pushes the three bits in a row north and south then excludes the center
 	set_attackMap((attacks ^ get_pieceLoc()) | attacks << 8 | attacks >> 8);
+}
+
+void RookMap::updateAttackMap()
+{
+
+}
+
+void BishopMap::updateAttackMap()
+{
+
+}
+
+void QueenMap::updateAttackMap()
+{
+
 }
