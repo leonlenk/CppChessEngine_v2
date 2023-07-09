@@ -137,17 +137,17 @@
   <ItemGroup>
     <ClCompile Include="board.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="pawnMap.h" />
+    <ClCompile Include="nonslidingPieceMaps.h" />
     <ClCompile Include="renderGame.cpp" />
     <ClCompile Include="updateAttackMap.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="board.h" />
     <ClInclude Include="globals.h" />
-    <ClInclude Include="kingMap.h" />
-    <ClInclude Include="knightMap.h" />
     <ClInclude Include="pieceMaps.h" />
     <ClInclude Include="slidingPieceMaps.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="blackPieces\b.png" />
@@ -162,6 +162,9 @@
     <Image Include="whitePieces\P.png" />
     <Image Include="whitePieces\Q.png" />
     <Image Include="whitePieces\R.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="OpenSans-Bold.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

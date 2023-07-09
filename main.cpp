@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    Board myGame;
+    Board myGame("empty");
     renderGame(&myGame);
 }
 

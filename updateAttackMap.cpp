@@ -1,6 +1,5 @@
 #include "pieceMaps.h"
-#include "knightMap.h"
-#include "kingMap.h"
+#include "nonslidingPieceMaps.h"
 #include "slidingPieceMaps.h"
 
 void KnightMap::updateAttackMap() 

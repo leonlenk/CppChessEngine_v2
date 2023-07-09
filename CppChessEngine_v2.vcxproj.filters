@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pawnMap.h">
+    <ClCompile Include="nonslidingPieceMaps.h">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="board.cpp">
@@ -30,6 +30,9 @@
     <ClCompile Include="updateAttackMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="board.h">
@@ -41,13 +44,10 @@
     <ClInclude Include="pieceMaps.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="knightMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kingMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="slidingPieceMaps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -88,5 +88,10 @@
     <Image Include="whitePieces\R.png">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="OpenSans-Bold.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
   </ItemGroup>
 </Project>
