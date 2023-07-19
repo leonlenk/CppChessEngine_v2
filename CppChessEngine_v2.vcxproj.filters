@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="nonslidingPieceMaps.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="board.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -27,10 +24,7 @@
     <ClCompile Include="renderGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="updateAttackMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
+    <ClCompile Include="getPsuedoLegalMoves.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -42,12 +36,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pieceMaps.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="slidingPieceMaps.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

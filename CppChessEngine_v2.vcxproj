@@ -137,17 +137,13 @@
   <ItemGroup>
     <ClCompile Include="board.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="nonslidingPieceMaps.h" />
     <ClCompile Include="renderGame.cpp" />
-    <ClCompile Include="updateAttackMap.cpp" />
-    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="getPsuedoLegalMoves.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="board.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="pieceMaps.h" />
-    <ClInclude Include="slidingPieceMaps.h" />
-    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="blackPieces\b.png" />

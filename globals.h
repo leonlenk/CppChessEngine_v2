@@ -3,36 +3,66 @@
 #include <string>
 
 // 64 bit unsigned int
-typedef unsigned long long U64;
+typedef uint64_t U64;
 
 int const NUM_PIECES = 12;
-int const BOARD_SIZE = 8;
+int const BOARD_WIDTH = 8;
+int const NUM_SQUARES = 64;
+
+int const FIRST_BLACK_INDEX = 6;
 
 // initial board set up FEN string
 std::string const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-// mask of ones without A file (col 1)
-U64 const notAFile = 0x7f7f7f7f7f7f7f7f;
-// mask of ones without H file (col 8)
-U64 const notHFile = 0xfefefefefefefefe;
-// mask without A or B file (col 1 and 2)
-U64 const notABFile = 0x3f3f3f3f3f3f3f3f;
-// mask without H or G file (col 7 and 8)
-U64 const notGHFile = 0xfcfcfcfcfcfcfcfc;
-// mask without A, B, or C file (col 1, 2, and 3)
-U64 const notABCFile = 0x1f1f1f1f1f1f1f1f;
-// mask without F, G, or H files (col 6, 7, and 8)
-U64 const notFGHFile = 0xf8f8f8f8f8f8f8f8;
+// masks that have the whole board except the files specified
+U64 const NOT_FILE_A = 0x7f7f7f7f7f7f7f7f;
+U64 const NOT_FILE_H = 0xfefefefefefefefe;
+U64 const NOT_FILE_AB = 0x3f3f3f3f3f3f3f3f;
+U64 const NOT_FILE_GH = 0xfcfcfcfcfcfcfcfc;
+U64 const NOT_FILE_ABC = 0x1f1f1f1f1f1f1f1f;
+U64 const NOT_FILE_FGH = 0xf8f8f8f8f8f8f8f8;
 
 
 // masks for only the files
-U64 const Afile = 0x0101010101010101;
-U64 const Bfile = 0x0202020202020202;
-U64 const Cfile = 0x0404040404040404;
-U64 const Dfile = 0x0808080808080808;
-U64 const Efile = 0x1010101010101010;
-U64 const Ffile = 0x2020202020202020;
-U64 const Gfile = 0x4040404040404040;
-U64 const Hfile = 0x8080808080808080;
+U64 const A_FILE = 0x0101010101010101;
+U64 const B_FILE = 0x0202020202020202;
+U64 const C_FILE = 0x0404040404040404;
+U64 const D_FILE = 0x0808080808080808;
+U64 const E_FILE = 0x1010101010101010;
+U64 const F_FILE = 0x2020202020202020;
+U64 const G_FILE = 0x4040404040404040;
+U64 const H_FILE = 0x8080808080808080;
 
-U64 const fullRank = 0x00000000000000ff;
+// masks for only the ranks
+U64 const RANK_1 = 0x00000000000000ff;
+U64 const RANK_2 = 0x000000000000ff00;
+U64 const RANK_3 = 0x0000000000ff0000;
+U64 const RANK_4 = 0x00000000ff000000;
+U64 const RANK_5 = 0x000000ff00000000;
+U64 const RANK_6 = 0x0000ff0000000000;
+U64 const RANK_7 = 0x00ff000000000000;
+U64 const RANK_8 = 0xff00000000000000;
+
+// rank masks
+U64 const WHITE_PAWN_START = 0x000000000000ff00;
+U64 const BLACK_PAWN_START = 0x00ff000000000000;
+
+
+// set up mask arrays
+U64 const FILE_MASKS[BOARD_WIDTH] = {
+	A_FILE, B_FILE, C_FILE, D_FILE, E_FILE, F_FILE, G_FILE, H_FILE
+};
+U64 const RANK_MASKS[BOARD_WIDTH] = {
+	RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8
+};
+
+U64 const DIAGONAL_MASKS[15] = { // top left to bottom right
+	0x0000000000000001, 0x0000000000000102, 0x0000000000010204, 0x0000000001020408, 0x0000000102040810,
+	0x0000010204081020, 0x0001020408102040, 0x0102040810204080, 0x0204081020408000, 0x0408102040800000,
+	0x0810204080000000, 0x1020408000000000, 0x2040800000000000, 0x4080000000000000, 0x8000000000000000
+};
+U64 const ANTIDIAGONAL_MASKS[15] = { // top right to bottom left
+	0x0000000000000080, 0x0000000000008040, 0x0000000000804020, 0x0000000080402010, 0x0000008040201008,
+	0x0000804020100804, 0x0080402010080402, 0x8040201008040201, 0x4020100804020100, 0x2010080402010000,
+	0x1008040201000000, 0x0804020100000000, 0x0402010000000000, 0x0201000000000000, 0x0100000000000000
+};

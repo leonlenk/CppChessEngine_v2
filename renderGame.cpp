@@ -4,16 +4,15 @@
 #include <iostream>
 #include "board.h"
 #include "pieceMaps.h"
-#include "nonslidingPieceMaps.h"
 #include "globals.h"
 
 using namespace std;
 
 void renderGame(Board* myBoard);
-void regenAttackMaps(Board* myBoard);
+// helper functions
 void drawBoard(int cellSize, sf::RenderWindow &window);
 void drawHighlights(int cellSize, sf::RenderWindow& window, U64 squares);
-void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTextures[12], std::unique_ptr<sf::Sprite> tempSprites[64], int draggedSpriteIndex, Board* myBoard);
+void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTextures[12], std::unique_ptr<sf::Sprite> tempSprites[65], int draggedSpriteIndex, Board* myBoard);
 void renderSprite(sf::RenderWindow& window, unique_ptr<sf::Sprite> tempSprites[65], sf::Texture pieceTextures[12], int row, int col, int cellSize, int textureNum);
 void displayToolTips();
 
@@ -23,7 +22,7 @@ void renderGame(Board* myBoard)
     int windowWidth, windowHeight;
     // make sure this is evenly divisiable by 8 otherwise borders render weirdly
     windowHeight = windowWidth = 800;
-    int cellSize = windowHeight / BOARD_SIZE;
+    int cellSize = windowHeight / BOARD_WIDTH;
     sf::Clock clock;
 
     // set font
@@ -31,7 +30,7 @@ void renderGame(Board* myBoard)
     font.loadFromFile("OpenSans-Bold.ttf");
 
     // board highlighting toggle flags
-    bool attackMapsToggled = false;
+    bool moveHighlighting = true;
     bool devModeToggled = false;
     bool removePieceDevToggled = false;
 
@@ -87,11 +86,11 @@ void renderGame(Board* myBoard)
                         displayToolTips();
 
                     // a for attack maps
-                    if (event.key.code == sf::Keyboard::A)
+                    if (event.key.code == sf::Keyboard::M)
                     {
-                        attackMapsToggled = !attackMapsToggled;
-                        if (attackMapsToggled) cout << "Attack maps highlighting on" << endl << endl;
-                        else cout << "Attack maps highlighting off" << endl << endl;
+                        moveHighlighting = !moveHighlighting;
+                        if (moveHighlighting) cout << "Move highlighting on" << endl << endl;
+                        else cout << "Move highlighting off" << endl << endl;
                     }
 
                     // d for dev mode: add pieces
@@ -127,19 +126,20 @@ void renderGame(Board* myBoard)
                     auto mouse_pos = sf::Mouse::getPosition(window); // Mouse position relative to the window in pixels
                     auto translated_pos = window.mapPixelToCoords(mouse_pos); // Mouse position translated into world coordinates
                     for (int i = 0; i < 64; i++)
-                        if (tempSprites[i] != nullptr && tempSprites[i]->getGlobalBounds().contains(translated_pos)) // Rectangle-contains-point check // Mouse is inside the sprite.
+                        // Rectangle-contains-point check // Mouse is inside the sprite.
+                        if (tempSprites[i] != nullptr && tempSprites[i]->getGlobalBounds().contains(translated_pos)) 
                         {
                             draggedSpriteIndex = i;
                             // decides the pieces old position in order to find which piece is being moved
                             oldPos = 1;
                             oldPos <<= 8 * (draggedSpriteIndex / 8) + (draggedSpriteIndex - ((draggedSpriteIndex / 8) * 8));
                             movingPiecesMap = myBoard->getPieceAtMask(oldPos);
+                            // removes the piece if dev tools are toggled
                             if (devModeToggled && removePieceDevToggled)
                             {
                                 tempSprites[draggedSpriteIndex] = nullptr;
                                 movingPiecesMap->set_pieceLoc(movingPiecesMap->get_pieceLoc() ^ oldPos);
                                 draggedSpriteIndex = -1;
-                                regenAttackMaps(myBoard);
                             }
                             break;
                         }
@@ -150,8 +150,8 @@ void renderGame(Board* myBoard)
                         mousePos <<= (mouse_pos.x / cellSize) + 8 * (8 - (mouse_pos.y / cellSize) - 1);
                         // add the piece to the board
                         myBoard->getPieceMapAtIndex(absoluteDevIndex)->set_pieceLoc(myBoard->getPieceMapAtIndex(absoluteDevIndex)->get_pieceLoc() | mousePos);
-                        // generate attack maps for both sides in case a is toggled
-                        regenAttackMaps(myBoard);
+                        // regenerate legal moves
+                        myBoard->getAllLegalMoves();
                     }
                 }
 
@@ -163,7 +163,7 @@ void renderGame(Board* myBoard)
                     newPos <<= (sf::Mouse::getPosition(window).x / cellSize) + (8 - ((sf::Mouse::getPosition(window).y / cellSize) * 8 )) - 16;
                     
                     int piecesIndex = myBoard->getPieceIndexAtMask(oldPos);
-                    myBoard->makeMove(oldPos, newPos, piecesIndex);
+                    myBoard->makeMove(oldPos, newPos);
 
                     oldPos = -1;
                     movingPiecesMap = nullptr;
@@ -173,8 +173,8 @@ void renderGame(Board* myBoard)
 
             // Draw window every frame
             drawBoard(cellSize, window);
-            if (attackMapsToggled && draggedSpriteIndex != -1 && movingPiecesMap != nullptr)
-                drawHighlights(cellSize, window, movingPiecesMap->get_attackMap());
+            if (moveHighlighting && draggedSpriteIndex != -1 && movingPiecesMap != nullptr)
+                drawHighlights(cellSize, window, myBoard->get_LegalMovesFor(oldPos));
             drawPieces(cellSize, window, pieceTextures, tempSprites, draggedSpriteIndex, myBoard);
 
             // render dev pieces
@@ -204,14 +204,6 @@ void renderGame(Board* myBoard)
             clock.restart();
         }
     }
-}
-
-void regenAttackMaps(Board* myBoard)
-{
-    myBoard->set_isWhitesMove(!myBoard->get_isWhitesMove());
-    myBoard->makeAttackMaps();
-    myBoard->set_isWhitesMove(!myBoard->get_isWhitesMove());
-    myBoard->makeAttackMaps();
 }
 
 void drawBoard(int cellSize, sf::RenderWindow &window)
@@ -252,23 +244,23 @@ void drawHighlights(int cellSize, sf::RenderWindow& window, U64 squares)
         }
 }
 
-void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTextures[12], unique_ptr<sf::Sprite> tempSprites[64], int draggedSpriteIndex, Board* myBoard)
+void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTextures[12], unique_ptr<sf::Sprite> tempSprites[65], int draggedSpriteIndex, Board* myBoard)
 {
     U64 mask = 1;
     int maskIndex = -1;
 
-    for(int row = 0; row < BOARD_SIZE; row++)
-        for(int col = 0; col < BOARD_SIZE; col++)
+    for(int row = 0; row < BOARD_WIDTH; row++)
+        for(int col = 0; col < BOARD_WIDTH; col++)
         {
             maskIndex = myBoard->getPieceIndexAtMask(mask);
             // if the sprite is being dragged
-            if (draggedSpriteIndex != -1 && draggedSpriteIndex == (row * BOARD_SIZE) + col)
+            if (draggedSpriteIndex != -1 && draggedSpriteIndex == (row * BOARD_WIDTH) + col)
                 tempSprites[draggedSpriteIndex]->setPosition(sf::Mouse::getPosition(window).x - (cellSize/2), sf::Mouse::getPosition(window).y - (cellSize / 2));
             // otherwise check where all the other pieces are
             else if (maskIndex != -1)
                 renderSprite(window, tempSprites, pieceTextures, row, col, cellSize, maskIndex);
             else
-                tempSprites[(row * BOARD_SIZE) + col] = nullptr;
+                tempSprites[(row * BOARD_WIDTH) + col] = nullptr;
 
             mask <<= 1;
         }
@@ -280,7 +272,7 @@ void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTexture
 
 void renderSprite(sf::RenderWindow& window, unique_ptr<sf::Sprite> tempSprites[65], sf::Texture pieceTextures[12], int row, int col, int cellSize, int textureNum)
 {
-    int index = (row * BOARD_SIZE) + col;
+    int index = (row * BOARD_WIDTH) + col;
     tempSprites[index] = make_unique<sf::Sprite>();
     tempSprites[index]->setTexture(pieceTextures[textureNum]);
     tempSprites[index]->setPosition(cellSize * col, cellSize * (7 - row));
@@ -292,7 +284,7 @@ void displayToolTips()
 {
     cout << "h: help" << endl;
     cout << "esc: close window" << endl;
-    cout << "a: toggle attack maps" << endl;
+    cout << "m: toggle move highlighting" << endl;
     cout << "d: click to add a piece using 1,2,...,6 to select type and w/b to select color and r to remove" << endl;
 
     cout << endl;
