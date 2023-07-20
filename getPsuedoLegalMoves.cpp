@@ -16,7 +16,8 @@ void WPawnMap::getPsuedoLegalMoves(Board* myBoard)
 		{
 			attacks = (((mask & NOT_FILE_A) << 9) | ((mask & NOT_FILE_H) << 7));
 			forwardPushes = mask << 8 | (mask & WHITE_PAWN_START) << 16;
-			myBoard->legalMoves[mask] = attacks & myBoard->blackPieceOccupancy | forwardPushes & myBoard->emptySquares;
+			myBoard->legalMoves[mask] = attacks & (myBoard->blackPieceOccupancy | myBoard->enPassentSquare) | forwardPushes & myBoard->emptySquares;
+			myBoard->allTempAttacks |= attacks;
 		}
 }
 
@@ -29,7 +30,8 @@ void BPawnMap::getPsuedoLegalMoves(Board* myBoard)
 		{
 			attacks = (((mask & NOT_FILE_H) >> 9) | ((mask & NOT_FILE_A) >> 7));
 			forwardPushes = mask >> 8 | (mask & BLACK_PAWN_START) >> 16;
-			myBoard->legalMoves[mask] = attacks & myBoard->blackPieceOccupancy | forwardPushes & myBoard->emptySquares;
+			myBoard->legalMoves[mask] = attacks & (myBoard->whitePieceOccupancy | myBoard->enPassentSquare) | forwardPushes & myBoard->emptySquares;
+			myBoard->allTempAttacks |= attacks;
 		}
 }
 
@@ -43,6 +45,7 @@ void KnightMap::getPsuedoLegalMoves(Board* myBoard)
 			h1 = ((mask >> 1) & NOT_FILE_A) | ((mask << 1) & NOT_FILE_H); // up and down 1
 			h2 = ((mask >> 2) & NOT_FILE_AB) | ((mask << 2) & NOT_FILE_GH); // up and down 2
 			myBoard->legalMoves[mask] = ((h1 << 16) | (h1 >> 16) | (h2 << 8) | (h2 >> 8)) & myBoard->attackableSquares;
+			myBoard->allTempAttacks |= ((h1 << 16) | (h1 >> 16) | (h2 << 8) | (h2 >> 8));
 		}
 }
 
@@ -68,6 +71,7 @@ void BishopMap::getPsuedoLegalMoves(Board* myBoard)
 			right = reverseBitMap(reverseBitMap(myBoard->allPieceOccupancy & antidiagonalMask) - 2 * reverseBitMap(mask));
 			antidiagonal = (left ^ right)& antidiagonalMask;
 			myBoard->legalMoves[mask] = (diagonal | antidiagonal) & myBoard->attackableAndEmptySquares;
+			myBoard->allTempAttacks |= (diagonal | antidiagonal);
 		}
 		mask <<= 1;
 	}
@@ -95,6 +99,7 @@ void RookMap::getPsuedoLegalMoves(Board* myBoard)
 			right = reverseBitMap(reverseBitMap(myBoard->allPieceOccupancy & file) - 2 * reverseBitMap(mask));
 			vertical = (left ^ right) & file;
 			myBoard->legalMoves[mask] = (horizontal | vertical) & myBoard->attackableAndEmptySquares;
+			myBoard->allTempAttacks |= (horizontal | vertical);
 		}
 		mask <<= 1;
 	}
@@ -140,6 +145,7 @@ void QueenMap::getPsuedoLegalMoves(Board* myBoard)
 
 			// insert them into the legal move map
 			myBoard->legalMoves[mask] = (horizontal | vertical | diagonal | antidiagonal) & myBoard->attackableAndEmptySquares;
+			myBoard->allTempAttacks |= (horizontal | vertical | diagonal | antidiagonal);
 		}
 		mask <<= 1;
 	}
@@ -154,6 +160,7 @@ void KingMap::getPsuedoLegalMoves(Board* myBoard)
 			attacks = (mask & NOT_FILE_A) << 1 | (mask & NOT_FILE_H) >> 1 | mask; // west one and east one
 			// pushes the three bits in a row north and south then excludes the center
 			myBoard->legalMoves[mask] = ((attacks ^ get_pieceLoc()) | attacks << 8 | attacks >> 8) & myBoard->attackableSquares;
+			myBoard->allTempAttacks |= ((attacks ^ get_pieceLoc()) | attacks << 8 | attacks >> 8);
 		}
 }
 

@@ -5,11 +5,6 @@
 #include "pieceMaps.h"
 #include "globals.h"
 
-class WPawnMap;
-class BPawnMap;
-class KnightMap;
-class KingMap;
-class PieceMaps;
 
 class Board
 {
@@ -17,8 +12,8 @@ public:
 	Board();
 	Board(std::string startingFEN);
 	~Board();
-
-	void getAllLegalMoves();
+	
+	void generateAllLegalMoves();
 
 	// returns true if valid move was made
 	bool makeMove(U64 fromWhere, U64 whereTo);
@@ -31,11 +26,12 @@ public:
 	
 	// accessor functions
 	U64 get_LegalMovesFor(U64 piece);
+	U64 get_allBlackAttacks() const;
+	U64 get_allWhiteAttacks() const;
 	bool get_isWhitesMove() const;
 	void set_isWhitesMove(bool setter);
 
 private:
-	void getAllPsuedoLegalMoves();
 	void findPieceOccupancy();
 	// stores the pieces position and maps to all the legal moves it can make
 	std::unordered_map <U64, U64> legalMoves;
@@ -46,9 +42,16 @@ private:
 	U64 allPieceOccupancy;
 	U64 attackableSquares;
 	U64 attackableAndEmptySquares;
+	U64 allTempAttacks;
+	U64 allBlackAttacks;
+	U64 allWhiteAttacks;
+	U64 enPassentSquare;
 	int halfTurnNum;
 	bool isWhitesMove;
 	bool isCheckMate;
+	// flags denote that these castles are still possible in this order
+	// white kingside, white queen side, black king side, black queen side
+	bool canCastle[4];
 
 friend class WPawnMap;
 friend class BPawnMap;
@@ -64,6 +67,8 @@ inline PieceMaps* Board::getPieceMapAtIndex(int index) const { return allPieces[
 // setters and getters 
 
 inline U64 Board::get_LegalMovesFor(U64 piece) { return legalMoves[piece]; }
+inline U64 Board::get_allBlackAttacks() const { return allBlackAttacks; }
+inline U64 Board::get_allWhiteAttacks() const { return allWhiteAttacks; }
 inline bool Board::get_isWhitesMove() const { return isWhitesMove; }
 inline void Board::set_isWhitesMove(bool setter) { isWhitesMove = setter; }
 

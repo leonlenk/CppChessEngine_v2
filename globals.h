@@ -14,6 +14,27 @@ int const FIRST_BLACK_INDEX = 6;
 // initial board set up FEN string
 std::string const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+std::string const FEN_PIECES = "PNBRQKpnbrqk";
+
+// piece array indexes
+int const W_PAWN_INDEX = 0;
+int const W_ROOK_INDEX = 3;
+int const W_KING_INDEX = 5;
+int const B_PAWN_INDEX = 6;
+int const B_ROOK_INDEX = 9;
+int const B_KING_INDEX = 11;
+
+// for checking castling validity
+U64 const W_KING_START = 16;
+U64 const B_KING_START = 1152921504606846976;
+U64 const W_KING_ROOK_START = 128;
+U64 const W_QUEEN_ROOK_START = 1;
+U64 const B_KING_ROOK_START = 9223372036854775808;
+U64 const B_QUEEN_ROOK_START = 72057594037927936;
+U64 const ROOK_START_ARRAY[4] = { W_KING_ROOK_START, W_QUEEN_ROOK_START, B_KING_ROOK_START, B_QUEEN_ROOK_START };
+// same format as above
+U64 const CASTLING_MASKS[4] = { 0x60, 0xe, 0x6000000000000000, 0xE00000000000000 };
+
 // masks that have the whole board except the files specified
 U64 const NOT_FILE_A = 0x7f7f7f7f7f7f7f7f;
 U64 const NOT_FILE_H = 0xfefefefefefefefe;

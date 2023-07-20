@@ -27,6 +27,9 @@
     <ClCompile Include="getPsuedoLegalMoves.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="moves.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="board.h">

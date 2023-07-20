@@ -1,5 +1,6 @@
 #include <string>
 #include <unordered_map>
+#include <iostream>
 #include "board.h"
 #include "globals.h"
 #include "pieceMaps.h"
@@ -28,10 +29,17 @@ Board::Board()
 	U64 one = 1;
 	for (int i = 0; i < NUM_PIECES; i++)
 		legalMoves[one << i] = 0;
+	// all castling rights are preserved at the beginning of the game
+	for (int i = 0; i < 4; i++)
+		canCastle[i] = true;
 	isWhitesMove = true;
 	isCheckMate = false;
-	halfTurnNum = 1;
-	getAllLegalMoves();
+	halfTurnNum = 0;
+	allWhiteAttacks = 0;
+	allBlackAttacks = 0;
+	attackableSquares = 0;
+	enPassentSquare = 0;
+	generateAllLegalMoves();
 }
 
 Board::Board(string startingFen) : Board()
@@ -39,6 +47,8 @@ Board::Board(string startingFen) : Board()
 	int letter = 0;
 	int rank = 8;
 	int file = 1;
+	U64 pieceLoc = 1;
+	size_t pieceIndex;
 
 	for (int i = 0; i < NUM_PIECES; i++)
 		allPieces[i]->set_pieceLoc(0);
@@ -50,7 +60,10 @@ Board::Board(string startingFen) : Board()
 	{
 		if (isalpha(startingFen[letter]))
 		{
-			//AddPiece(rank, file, letter);
+			pieceIndex = FEN_PIECES.find(startingFen[letter]);
+			pieceLoc = 1;
+			pieceLoc <<= 8 * (rank - 1) + (file - 1);
+			allPieces[pieceIndex]->set_pieceLoc(allPieces[pieceIndex]->get_pieceLoc() | pieceLoc);
 			file++;
 		}
 		else if (isdigit(startingFen[letter]))
@@ -65,54 +78,28 @@ Board::Board(string startingFen) : Board()
 		isWhitesMove = true;
 	else
 		isWhitesMove = false;
+	letter += 2;
 
-	getAllLegalMoves();
-}
+	// find castling permissions
+	for (int i = 0; i < 4; i++)
+		canCastle[i] = false;
+	if (startingFen[letter] != '-')
+		for (int i = 0; i < 4; i++)
+			switch (startingFen[letter + i])
+			{
+			case ' ': break;
+			case 'K': canCastle[0] = true; break;
+			case 'Q': canCastle[1] = true; break;
+			case 'k': canCastle[2] = true; break;
+			case 'q': canCastle[3] = true; break;
+			}
 
-void Board::getAllLegalMoves()
-{
-	getAllPsuedoLegalMoves();
-}
+	for (int i = 0; i < 4; i++)
+		if (canCastle[i] == true)
+			letter++;
+	letter++;
 
-bool Board::makeMove(U64 fromWhere, U64 whereTo)
-{
-	if ((legalMoves[fromWhere] & whereTo) == 0)
-		return false;
-	int pieceIndex = getPieceIndexAtMask(fromWhere);
-	allPieces[pieceIndex]->set_pieceLoc((allPieces[pieceIndex]->get_pieceLoc() ^ fromWhere) | whereTo);
-	isWhitesMove = !isWhitesMove;
-	getAllLegalMoves();
-	halfTurnNum++;
-	return true;
-}
-
-void Board::getAllPsuedoLegalMoves()
-{
-	int pieceIndex;
-
-	// find moves only for the active player 
-	if (isWhitesMove) pieceIndex = 6; 
-	else pieceIndex = 12;
-
-	findPieceOccupancy();
-	for (int i = pieceIndex - 6; i < pieceIndex; i++)
-		allPieces[i]->getPsuedoLegalMoves(this);
-}
-
-void Board::findPieceOccupancy()
-{
-	whitePieceOccupancy = 0;
-	blackPieceOccupancy = 0;
-	for (int i = 0; i < FIRST_BLACK_INDEX; i++)
-		whitePieceOccupancy |= allPieces[i]->get_pieceLoc();
-	for (int i = FIRST_BLACK_INDEX; i < NUM_PIECES; i++)
-		blackPieceOccupancy |= allPieces[i]->get_pieceLoc();
-	emptySquares = ~(blackPieceOccupancy | whitePieceOccupancy);
-
-	if (isWhitesMove) attackableSquares = blackPieceOccupancy | emptySquares;
-	else attackableSquares = whitePieceOccupancy | emptySquares;
-	allPieceOccupancy = whitePieceOccupancy | blackPieceOccupancy;
-	attackableAndEmptySquares = emptySquares | attackableSquares;
+	generateAllLegalMoves();
 }
 
 Board::~Board()

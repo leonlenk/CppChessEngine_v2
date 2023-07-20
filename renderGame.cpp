@@ -16,6 +16,14 @@ void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTexture
 void renderSprite(sf::RenderWindow& window, unique_ptr<sf::Sprite> tempSprites[65], sf::Texture pieceTextures[12], int row, int col, int cellSize, int textureNum);
 void displayToolTips();
 
+// colors for drawing board and highlights
+const sf::Color DARK_SQUARES = sf::Color(118, 150, 86);
+const sf::Color LIGHT_SQUARES = sf::Color(238, 238, 210);
+
+// for the draw highlights function
+const int RENDER_SQUARES = 1;
+const int RENDER_CIRCLES = 2;
+
 void renderGame(Board* myBoard)
 {
     int frameRate = 60;
@@ -33,6 +41,8 @@ void renderGame(Board* myBoard)
     bool moveHighlighting = true;
     bool devModeToggled = false;
     bool removePieceDevToggled = false;
+    bool whiteAttacksHighlighting = false;
+    bool blackAttacksHighlighting = false;
 
     // dev mode helper flags
     bool devWhite = true;
@@ -93,6 +103,28 @@ void renderGame(Board* myBoard)
                         else cout << "Move highlighting off" << endl << endl;
                     }
 
+                    if (event.key.code == sf::Keyboard::W)
+                    {
+                        whiteAttacksHighlighting = !whiteAttacksHighlighting;
+                        if (whiteAttacksHighlighting) 
+                        {
+                            cout << "White attacks highlighting on" << endl << endl;
+                            myBoard->generateAllLegalMoves();
+                        }
+                        else cout << "White attacks highlighting off" << endl << endl;
+                    }
+
+                    if (event.key.code == sf::Keyboard::B)
+                    {
+                        blackAttacksHighlighting = !blackAttacksHighlighting;
+                        if (blackAttacksHighlighting) 
+                        {
+                            cout << "Black attacks highlighting on" << endl << endl;
+                            myBoard->generateAllLegalMoves();
+                        }
+                        else cout << "Black attacks highlighting off" << endl << endl;
+                    }
+
                     // d for dev mode: add pieces
                     if (event.key.code == sf::Keyboard::D)
                     {
@@ -104,8 +136,7 @@ void renderGame(Board* myBoard)
                     // if dev mode is toggled allow user to switch piece they are adding
                     if (devModeToggled)
                     {
-                        if (event.key.code == sf::Keyboard::B) devWhite = false;
-                        if (event.key.code == sf::Keyboard::W) devWhite = true;
+                        if (event.key.code == sf::Keyboard::C) devWhite = !devWhite;
                         if (event.key.code == sf::Keyboard::Num1) { devIndex = 0; removePieceDevToggled = false; }
                         if (event.key.code == sf::Keyboard::Num2) { devIndex = 1; removePieceDevToggled = false; }
                         if (event.key.code == sf::Keyboard::Num3) { devIndex = 2; removePieceDevToggled = false; }
@@ -140,6 +171,7 @@ void renderGame(Board* myBoard)
                                 tempSprites[draggedSpriteIndex] = nullptr;
                                 movingPiecesMap->set_pieceLoc(movingPiecesMap->get_pieceLoc() ^ oldPos);
                                 draggedSpriteIndex = -1;
+                                myBoard->generateAllLegalMoves();
                             }
                             break;
                         }
@@ -151,7 +183,7 @@ void renderGame(Board* myBoard)
                         // add the piece to the board
                         myBoard->getPieceMapAtIndex(absoluteDevIndex)->set_pieceLoc(myBoard->getPieceMapAtIndex(absoluteDevIndex)->get_pieceLoc() | mousePos);
                         // regenerate legal moves
-                        myBoard->getAllLegalMoves();
+                        myBoard->generateAllLegalMoves();
                     }
                 }
 
@@ -173,8 +205,14 @@ void renderGame(Board* myBoard)
 
             // Draw window every frame
             drawBoard(cellSize, window);
+            // highlights
+            if (blackAttacksHighlighting)
+                drawHighlights(cellSize, window, myBoard->get_allBlackAttacks());
+            else if (whiteAttacksHighlighting)
+                drawHighlights(cellSize, window, myBoard->get_allWhiteAttacks());
             if (moveHighlighting && draggedSpriteIndex != -1 && movingPiecesMap != nullptr)
                 drawHighlights(cellSize, window, myBoard->get_LegalMovesFor(oldPos));
+            // pieces
             drawPieces(cellSize, window, pieceTextures, tempSprites, draggedSpriteIndex, myBoard);
 
             // render dev pieces
@@ -208,7 +246,7 @@ void renderGame(Board* myBoard)
 
 void drawBoard(int cellSize, sf::RenderWindow &window)
 {
-    window.clear(sf::Color(118, 150, 86)); // dark squares
+    window.clear(DARK_SQUARES); // dark squares
     // draw the checkerboard
 
     for (int row = 0; row < cellSize; row++)
@@ -218,7 +256,7 @@ void drawBoard(int cellSize, sf::RenderWindow &window)
             {
                 sf::RectangleShape rectangle(sf::Vector2f(cellSize, cellSize));
                 rectangle.setPosition(cellSize * row, cellSize * col);
-                rectangle.setFillColor(sf::Color(238, 238, 210)); // light square
+                rectangle.setFillColor(LIGHT_SQUARES); // light square
                 window.draw(rectangle);
             }
         }
@@ -285,7 +323,10 @@ void displayToolTips()
     cout << "h: help" << endl;
     cout << "esc: close window" << endl;
     cout << "m: toggle move highlighting" << endl;
-    cout << "d: click to add a piece using 1,2,...,6 to select type and w/b to select color and r to remove" << endl;
+    cout << "w: toggle highlighting for all black attacks*" << endl;
+    cout << "b: toggle highlighting for all black attacks*" << endl;
+    cout << "d: click to add a piece using 1,2,...,6 to select type, c to change color, and r to remove" << endl;
+    cout << "*black and white attack maps cannot be toggled simultaniously" << endl;
 
     cout << endl;
 }
