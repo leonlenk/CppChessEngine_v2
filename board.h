@@ -2,6 +2,7 @@
 #include <string>
 #include <unordered_map>
 #include <SFML/Graphics.hpp>
+#include <utility>
 #include "pieceMaps.h"
 #include "globals.h"
 
@@ -32,20 +33,30 @@ public:
 	void set_isWhitesMove(bool setter);
 
 private:
-	void findPieceOccupancy();
+	void setLegalMoveFlags();
+	void findPinsAndChecks(bool isForWhite);
+	void removeFromLegalMoves(U64 piecesToRemove);
 	// stores the pieces position and maps to all the legal moves it can make
 	std::unordered_map <U64, U64> legalMoves;
 	PieceMaps* allPieces[NUM_PIECES];
+	// for where pieces can move
 	U64 emptySquares;
 	U64 whitePieceOccupancy;
 	U64 blackPieceOccupancy;
 	U64 allPieceOccupancy;
 	U64 attackableSquares;
 	U64 attackableAndEmptySquares;
+	// attacks
 	U64 allTempAttacks;
 	U64 allBlackAttacks;
 	U64 allWhiteAttacks;
+	// en passent
 	U64 enPassentSquare;
+	// checks and pins
+	U64 locOfChecks;
+	U64 checkMoveMask;
+	U64 slidingCheckMask; // ensures king can't go behind itself
+	// game state info
 	int halfTurnNum;
 	bool isWhitesMove;
 	bool isCheckMate;

@@ -1,5 +1,6 @@
 #include <string>
 #include <unordered_map>
+#include <bit>
 #include "board.h"
 #include "globals.h"
 #include "pieceMaps.h"
@@ -8,22 +9,36 @@ using namespace std;
 
 void Board::generateAllLegalMoves()
 {
-	findPieceOccupancy();
+	setLegalMoveFlags();
 
 	// get white legal moves
 	allTempAttacks = 0;
 	attackableSquares = blackPieceOccupancy | emptySquares;
 	attackableAndEmptySquares = emptySquares | attackableSquares;
-	for (int i = 0; i < FIRST_BLACK_INDEX; i++)
-		allPieces[i]->getPsuedoLegalMoves(this);
+	findPinsAndChecks(true);
+	if (popcount(locOfChecks) > 1) // if there is more than one check only the king can move
+	{
+		removeFromLegalMoves(whitePieceOccupancy);
+		allPieces[W_KING_INDEX]->getPsuedoLegalMoves(this);
+	}
+	else
+		for (int i = 0; i < FIRST_BLACK_INDEX; i++)
+			allPieces[i]->getPsuedoLegalMoves(this);
 	allWhiteAttacks = allTempAttacks;
 
 	// get black legal moves
 	allTempAttacks = 0;
 	attackableSquares = whitePieceOccupancy | emptySquares;
 	attackableAndEmptySquares = emptySquares | attackableSquares;
-	for (int i = FIRST_BLACK_INDEX; i < NUM_PIECES; i++)
-		allPieces[i]->getPsuedoLegalMoves(this);
+	findPinsAndChecks(false);
+	if (popcount(locOfChecks) > 1)
+	{
+		removeFromLegalMoves(blackPieceOccupancy);
+		allPieces[B_KING_INDEX]->getPsuedoLegalMoves(this);
+	}
+	else
+		for (int i = FIRST_BLACK_INDEX; i < NUM_PIECES; i++)
+			allPieces[i]->getPsuedoLegalMoves(this);
 	allBlackAttacks = allTempAttacks;
 
 	legalMoves[allPieces[W_KING_INDEX]->get_pieceLoc()] &= ~allBlackAttacks;
@@ -44,7 +59,20 @@ void Board::generateAllLegalMoves()
 		legalMoves[B_KING_START] |= B_KING_START >> 2;
 }
 
-void Board::findPieceOccupancy()
+void Board::removeFromLegalMoves(U64 piecesToRemove)
+{
+	U64 tempMask;
+	U64 tempPiecesToRemove = piecesToRemove;
+	U64 one = 1;
+	while (tempPiecesToRemove)
+	{
+		tempMask = one << countr_zero(tempPiecesToRemove);
+		legalMoves[tempMask] = 0;
+		tempPiecesToRemove ^= tempMask;
+	}
+}
+
+void Board::setLegalMoveFlags()
 {
 	whitePieceOccupancy = 0;
 	blackPieceOccupancy = 0;

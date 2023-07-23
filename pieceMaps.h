@@ -87,4 +87,5 @@ public:
 	KingMap(U64 intialState) { set_pieceLoc(intialState); }
 	virtual ~KingMap() {}
 	virtual void getPsuedoLegalMoves(Board* myBoard);
+	void findPinsAndChecks();
 };

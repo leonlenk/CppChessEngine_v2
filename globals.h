@@ -18,10 +18,15 @@ std::string const FEN_PIECES = "PNBRQKpnbrqk";
 
 // piece array indexes
 int const W_PAWN_INDEX = 0;
+int const W_KNIGHT_INDEX = 1;
+int const W_BISHOP_INDEX = 2;
 int const W_ROOK_INDEX = 3;
+int const W_QUEEN_INDEX = 4;
 int const W_KING_INDEX = 5;
 int const B_PAWN_INDEX = 6;
+int const B_BISHOP_INDEX = 8;
 int const B_ROOK_INDEX = 9;
+int const B_QUEEN_INDEX = 10;
 int const B_KING_INDEX = 11;
 
 // for checking castling validity
@@ -65,8 +70,8 @@ U64 const RANK_7 = 0x00ff000000000000;
 U64 const RANK_8 = 0xff00000000000000;
 
 // rank masks
-U64 const WHITE_PAWN_START = 0x000000000000ff00;
-U64 const BLACK_PAWN_START = 0x00ff000000000000;
+U64 const WHITE_PAWN_FIRST_MOVE = 0x0000000000ff0000;
+U64 const BLACK_PAWN_FIRST_MOVE = 0x0000ff0000000000;
 
 
 // set up mask arrays
