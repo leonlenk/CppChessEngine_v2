@@ -109,6 +109,11 @@ Board::~Board()
 			delete allPieces[i];
 }
 
+void Board::runPERFT()
+{
+
+}
+
 PieceMaps* Board::getPieceAtMask(const U64 mask) const
 {
 	for (int i = 0; i < NUM_PIECES; i++)

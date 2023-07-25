@@ -24,10 +24,10 @@
     <ClCompile Include="renderGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="getPsuedoLegalMoves.cpp">
+    <ClCompile Include="genMoves.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="moves.cpp">
+    <ClCompile Include="genLegalMoves.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

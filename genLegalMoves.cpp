@@ -1,6 +1,7 @@
 #include <string>
 #include <unordered_map>
 #include <bit>
+#include <iostream>
 #include "board.h"
 #include "globals.h"
 #include "pieceMaps.h"
@@ -41,21 +42,29 @@ void Board::generateAllLegalMoves()
 			allPieces[i]->getPsuedoLegalMoves(this);
 	allBlackAttacks = allTempAttacks;
 
+	// make sure king doesn't move into an attacked square
 	legalMoves[allPieces[W_KING_INDEX]->get_pieceLoc()] &= ~allBlackAttacks;
 	legalMoves[allPieces[B_KING_INDEX]->get_pieceLoc()] &= ~allWhiteAttacks;
+
+	// restrict the movment of pinned pieces
+	while (numOfPins > 0)
+	{
+		numOfPins--;
+		legalMoves[pinnedPieceLoc[numOfPins]] &= pinnedMovementMasks[numOfPins];
+	}
 	
 	// white king side castling
-	if ((allPieceOccupancy & CASTLING_MASKS[0]) == 0 && (allBlackAttacks & CASTLING_MASKS[0]) == 0 && canCastle[0])
+	if ((allPieceOccupancy & CASTLING_MASKS[0]) == 0 && (allBlackAttacks & CASTLING_MASKS[0]) == 0 && canCastle[0] && (allPieces[W_KING_INDEX]->get_pieceLoc() & allBlackAttacks) == 0)
 		legalMoves[W_KING_START] |= W_KING_START << 2;
 	// white queen side castling
-	if ((allPieceOccupancy & CASTLING_MASKS[1]) == 0 && (allBlackAttacks & CASTLING_MASKS[1]) == 0 && canCastle[1])
+	if ((allPieceOccupancy & CASTLING_MASKS[1]) == 0 && (allBlackAttacks & CASTLING_MASKS[1]) == 0 && canCastle[1] && (allPieces[W_KING_INDEX]->get_pieceLoc() & allBlackAttacks) == 0)
 		legalMoves[W_KING_START] |= W_KING_START >> 2;
 
 	// black king side castling
-	if ((allPieceOccupancy & CASTLING_MASKS[2]) == 0 && (allWhiteAttacks & CASTLING_MASKS[2]) == 0 && canCastle[2])
+	if ((allPieceOccupancy & CASTLING_MASKS[2]) == 0 && (allWhiteAttacks & CASTLING_MASKS[2]) == 0 && canCastle[2] && (allPieces[B_KING_INDEX]->get_pieceLoc() & allWhiteAttacks) == 0)
 		legalMoves[B_KING_START] |= B_KING_START << 2;
 	// black queen side castling
-	if ((allPieceOccupancy & CASTLING_MASKS[3]) == 0 && (allWhiteAttacks & CASTLING_MASKS[3]) == 0 && canCastle[3])
+	if ((allPieceOccupancy & CASTLING_MASKS[3]) == 0 && (allWhiteAttacks & CASTLING_MASKS[3]) == 0 && canCastle[3] && (allPieces[B_KING_INDEX]->get_pieceLoc() & allWhiteAttacks) == 0)
 		legalMoves[B_KING_START] |= B_KING_START >> 2;
 }
 
@@ -74,6 +83,7 @@ void Board::removeFromLegalMoves(U64 piecesToRemove)
 
 void Board::setLegalMoveFlags()
 {
+	numOfPins = 0;
 	whitePieceOccupancy = 0;
 	blackPieceOccupancy = 0;
 	for (int i = 0; i < FIRST_BLACK_INDEX; i++)
