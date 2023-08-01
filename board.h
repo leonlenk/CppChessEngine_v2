@@ -3,9 +3,9 @@
 #include <unordered_map>
 #include <SFML/Graphics.hpp>
 #include <utility>
+#include <stack>
 #include "pieceMaps.h"
 #include "globals.h"
-
 
 class Board
 {
@@ -13,12 +13,30 @@ public:
 	Board();
 	Board(std::string startingFEN);
 	~Board();
-	
-	void runPERFT();
+	struct HistoryFrame;
+
+	// runs perft with each path printed
+	int runSplitPERFT(int depth);
+	int runPERFT(int depth);
+	// returns true if move succesfully undone
+	bool undoMove();
+
+	std::string exportFEN();
+
+	// returns algebraic notation from a move
+	// bitmap2alg does not account for checks and will not add a +
+	std::string bitMap2Alg(U64 fromWhere, U64 whereTo);
+	std::string history2Alg(HistoryFrame* myMove);
+
+	// algebraic notation for piece locations
+	std::string mask2AlgLoc(U64 mask);
+	U64 algLoc2Mask(char first, char second);
+	U64 algLoc2Mask(std::string algLoc);
 
 	void generateAllLegalMoves();
 
 	// returns true if valid move was made
+	bool makeMove(std::string algNotation);
 	bool makeMove(U64 fromWhere, U64 whereTo);
 	
 	// gets the piece at the location of the mask
@@ -28,11 +46,27 @@ public:
 	PieceMaps* getPieceMapAtIndex(int index) const;
 	
 	// accessor functions
+	HistoryFrame* get_mostRecentMove();
 	U64 get_LegalMovesFor(U64 piece);
 	U64 get_allBlackAttacks() const;
 	U64 get_allWhiteAttacks() const;
 	bool get_isWhitesMove() const;
 	void set_isWhitesMove(bool setter);
+
+	struct HistoryFrame
+	{
+		HistoryFrame() : canCastle{ 1, 1, 1, 1 } { startLoc = 0; endLoc = 0; enPassentSquare = 0; movingPieceIndex = -1; capturedPieceIndex = -1; pawnPromotion = -1; inCheck = false; }
+		HistoryFrame(U64 start, U64 end, int moving) : HistoryFrame() { startLoc = start; endLoc = end; movingPieceIndex = moving; }
+		~HistoryFrame() {}
+		U64 startLoc;
+		U64 endLoc;
+		U64 enPassentSquare;
+		int movingPieceIndex;
+		int capturedPieceIndex;
+		int pawnPromotion;
+		bool canCastle[4];
+		bool inCheck;
+	};
 	
 private:
 	void setLegalMoveFlags();
@@ -41,6 +75,7 @@ private:
 	// moves the king as a sliding piece in all 8 directions (called in each below) and evaluates if its getting attacked
 	// from each direction then makes masks
 	U64 findSlidingPieceChecksPins(U64 attackMask, U64 attackingPiece, U64 kingLoc, U64 friendlyPieces);
+	std::stack<HistoryFrame*> history;
 	// stores the pieces position and maps to all the legal moves it can make
 	std::unordered_map <U64, U64> legalMoves;
 	PieceMaps* allPieces[NUM_PIECES];
@@ -65,7 +100,11 @@ private:
 	U64 pinnedPieceLoc[16]; // there are at most 8 pins possible for each king at once
 	U64 pinnedMovementMasks[16]; // in a one to one correspondance with the above array
 	int numOfPins;
+	// pawn promotion
+	int wPawnPromote;
+	int bPawnPromote;
 	// game state info
+	int fullMoveNum;
 	int halfTurnNum;
 	bool isWhitesMove;
 	bool isCheckMate;
@@ -85,6 +124,7 @@ friend class KingMap;
 inline PieceMaps* Board::getPieceMapAtIndex(int index) const { return allPieces[index]; }
 
 // setters and getters 
+inline Board::HistoryFrame* Board::get_mostRecentMove() { if (history.empty()) return nullptr; return history.top(); }
 inline U64 Board::get_LegalMovesFor(U64 piece) { return legalMoves[piece]; }
 inline U64 Board::get_allBlackAttacks() const { return allBlackAttacks; }
 inline U64 Board::get_allWhiteAttacks() const { return allWhiteAttacks; }

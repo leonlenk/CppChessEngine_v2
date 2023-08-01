@@ -137,7 +137,8 @@
   <ItemGroup>
     <ClCompile Include="board.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="genLegalMoves.cpp" />
+    <ClCompile Include="moves.cpp" />
+    <ClCompile Include="perft.cpp" />
     <ClCompile Include="renderGame.cpp" />
     <ClCompile Include="genMoves.cpp" />
   </ItemGroup>

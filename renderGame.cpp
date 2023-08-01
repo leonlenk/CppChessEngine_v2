@@ -10,7 +10,7 @@ using namespace std;
 
 void renderGame(Board* myBoard);
 // helper functions
-void drawBoard(int cellSize, sf::RenderWindow &window);
+void drawBoard(int cellSize, sf::RenderWindow &window, sf::Font font);
 void drawHighlights(int cellSize, sf::RenderWindow& window, U64 squares);
 void drawPieces(int cellSize, sf::RenderWindow& window, sf::Texture pieceTextures[12], std::unique_ptr<sf::Sprite> tempSprites[65], int draggedSpriteIndex, Board* myBoard);
 void renderSprite(sf::RenderWindow& window, unique_ptr<sf::Sprite> tempSprites[65], sf::Texture pieceTextures[12], int row, int col, int cellSize, int textureNum);
@@ -94,6 +94,16 @@ void renderGame(Board* myBoard)
                     // h is for help
                     if (event.key.code == sf::Keyboard::H)
                         displayToolTips();
+
+                    // u is for undo
+                    if (event.key.code == sf::Keyboard::U)
+                    {
+                        if (myBoard->undoMove())
+                            cout << "Undid last move!" << endl << endl;
+                        else
+                            cout << "No moves to undo!" << endl << endl;
+                    }
+
 
                     // a for attack maps
                     if (event.key.code == sf::Keyboard::M)
@@ -188,6 +198,7 @@ void renderGame(Board* myBoard)
                 }
 
                 // implements the drop
+                // ie makes a move
                 if (draggedSpriteIndex != -1 && event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
                 {
                     U64 newPos = 1;
@@ -195,7 +206,8 @@ void renderGame(Board* myBoard)
                     newPos <<= (sf::Mouse::getPosition(window).x / cellSize) + (8 - ((sf::Mouse::getPosition(window).y / cellSize) * 8 )) - 16;
                     
                     int piecesIndex = myBoard->getPieceIndexAtMask(oldPos);
-                    myBoard->makeMove(oldPos, newPos);
+                    if(myBoard->makeMove(oldPos, newPos))
+                        cout << myBoard->history2Alg(myBoard->get_mostRecentMove()) << endl;
 
                     oldPos = -1;
                     movingPiecesMap = nullptr;
@@ -204,7 +216,7 @@ void renderGame(Board* myBoard)
             }
 
             // Draw window every frame
-            drawBoard(cellSize, window);
+            drawBoard(cellSize, window, font);
             // highlights
             if (blackAttacksHighlighting)
                 drawHighlights(cellSize, window, myBoard->get_allBlackAttacks());
@@ -244,22 +256,45 @@ void renderGame(Board* myBoard)
     }
 }
 
-void drawBoard(int cellSize, sf::RenderWindow &window)
+void drawBoard(int cellSize, sf::RenderWindow &window, sf::Font font)
 {
     window.clear(DARK_SQUARES); // dark squares
     // draw the checkerboard
 
-    for (int row = 0; row < cellSize; row++)
-        for (int col = 0; col < cellSize; col++)
+    for (int row = 0; row < 8; row++)
+        for (int col = 0; col < 8; col++)
         {
             if ((row + col) % 2 == 0)
             {
+                // draw squares
                 sf::RectangleShape rectangle(sf::Vector2f(cellSize, cellSize));
                 rectangle.setPosition(cellSize * row, cellSize * col);
                 rectangle.setFillColor(LIGHT_SQUARES); // light square
                 window.draw(rectangle);
             }
         }
+
+    // draw letters and numbers on the sides of the board
+    for (int row = 0; row < 8; row++)
+    {
+        // numbers
+        sf::Color tempColor = row % 2 ? LIGHT_SQUARES : DARK_SQUARES;
+        sf::Text numText(char(8 - row + '0'), font);
+        numText.setCharacterSize(cellSize / 5);
+        numText.setStyle(sf::Text::Bold);
+        numText.setFillColor(tempColor);
+        numText.setPosition(cellSize/12, cellSize * row);
+        window.draw(numText);
+
+        // alphabet
+        tempColor = row % 2 ? DARK_SQUARES : LIGHT_SQUARES;
+        sf::Text charText(char('a' + row), font);
+        charText.setCharacterSize(cellSize / 5);
+        charText.setStyle(sf::Text::Bold);
+        charText.setFillColor(tempColor);
+        charText.setPosition(cellSize * row + 6 * cellSize / 7, 8 * cellSize - cellSize / 4);
+        window.draw(charText);
+    }
 }
 
 void drawHighlights(int cellSize, sf::RenderWindow& window, U64 squares)
@@ -322,11 +357,13 @@ void displayToolTips()
 {
     cout << "h: help" << endl;
     cout << "esc: close window" << endl;
+    cout << "u: undo last move" << endl;
     cout << "m: toggle move highlighting" << endl;
     cout << "w: toggle highlighting for all black attacks*" << endl;
     cout << "b: toggle highlighting for all black attacks*" << endl;
     cout << "d: click to add a piece using 1,2,...,6 to select type, c to change color, and r to remove" << endl;
     cout << "*black and white attack maps cannot be toggled simultaniously" << endl;
+    cout << "**weird behaviour may occur if more than one king from a single color is on the board at a time" << endl;
 
     cout << endl;
 }

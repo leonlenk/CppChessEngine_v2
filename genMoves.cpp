@@ -134,6 +134,7 @@ void Board::findPinsAndChecks(bool isForWhite)
 	// set board flags to zero
 	locOfChecks = 0;
 	slidingCheckMask = 0;
+	checkMoveMask = 0;
 
 	// masks
 	diagonalMask = DIAGONAL_MASKS[kingNumShifts / 8 + kingNumShifts % 8];

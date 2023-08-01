@@ -15,6 +15,9 @@ int const FIRST_BLACK_INDEX = 6;
 std::string const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 std::string const FEN_PIECES = "PNBRQKpnbrqk";
+std::string const CASTLE_NOTATION = "KQkq";
+
+U64 const ONE = 1;
 
 // piece array indexes
 int const W_PAWN_INDEX = 0;
