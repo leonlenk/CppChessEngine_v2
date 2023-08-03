@@ -185,7 +185,6 @@ bool Board::makeMove(U64 fromWhere, U64 whereTo)
 
 	// move the piece
 	allPieces[pieceIndex]->set_pieceLoc((allPieces[pieceIndex]->get_pieceLoc() ^ fromWhere) | whereTo);
-
 	// check if pawn is being promoted
 	if (pieceIndex == W_PAWN_INDEX && whereTo & RANK_8)
 	{

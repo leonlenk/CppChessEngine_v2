@@ -111,7 +111,7 @@ void KingMap::getPsuedoLegalMoves(Board* myBoard)
 	U64 attacks;
 	attacks = (pieceLoc & NOT_FILE_A) << 1 | (pieceLoc & NOT_FILE_H) >> 1 | pieceLoc; // west one and east one
 	// pushes the three bits in a row north and south then excludes the center
-	myBoard->legalMoves[pieceLoc] = (((attacks ^ get_pieceLoc()) | attacks << 8 | attacks >> 8) & myBoard->attackableSquares) & (~myBoard->slidingCheckMask);
+	myBoard->legalMoves[pieceLoc] = (((attacks ^ get_pieceLoc()) | attacks << 8 | attacks >> 8) & myBoard->attackableSquares) & (~myBoard->slidingCheckMask | myBoard->locOfChecks);
 	myBoard->allTempAttacks |= ((attacks ^ get_pieceLoc()) | attacks << 8 | attacks >> 8);
 }
 
