@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <SFML/Graphics.hpp>
+//#include <SFML/Graphics.hpp>
 #include <utility>
 #include <stack>
 #include "pieceMaps.h"

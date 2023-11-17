@@ -22,9 +22,9 @@ Board::Board()
 	allPieces[6] = new BPawnMap(71776119061217280);
 	allPieces[7] = new KnightMap(4755801206503243776);
 	allPieces[8] = new BishopMap(2594073385365405696);
-	allPieces[9] = new RookMap(9295429630892703744);
+	allPieces[9] = new RookMap(9295429630892703744ull);
 	allPieces[10] = new QueenMap(576460752303423488);
-	allPieces[11] = new KingMap(1152921504606846976);
+	allPieces[11] = new KingMap(1152921504606846976ull);
 
 	// sets all pieces to have no legal moves in the beginning
 	U64 one = 1;

@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <bit>
 #include <chrono>
 #include "board.h"
 #include "globals.h"
